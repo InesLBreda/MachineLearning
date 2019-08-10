@@ -10,14 +10,14 @@ output:
 
 
 # Summary:
-This assignment aims to develop a model that can predict if a barbell lift is being well executed or not. The data includes sensor measurements located in the belt, the forearm, the arm and the dumbell of 6 individuals. Each of the 6 individuals performed barbell lifts in 5 different ways, 1 in a correct manner (class A), and 4 in an incorrect manner (class B, C, D and E). The training data includes 19622 observations of 159 variables, whereas the testing data includes 20 observations of 159 variables. 
+This assignment aims to develop a model that can predict if a barbell lift is being well executed or not. The data includes sensor measurements located in the belt, the forearm, the arm and the dumbell of 6 individuals. Each of the 6 individuals performed barbell lifts in 5 different ways, 1 in a correct manner (class A), and 4 in an incorrect manner (class B, C, D and E). The model further described below classifies the barbell lifts with an accuracy of 0.99. 
 
 
 # Packages and data
 
 
 
-## Cleaning and treating both training and test data
+## Cleaning and treating data
 
 ```r
 #import data
@@ -54,7 +54,7 @@ dim(training); dim(test)
 ## [1] 20 57
 ```
 
-#Model creation and evaluation
+## Model creation and evaluation
 
 ```r
 #creating traing and testing data
@@ -68,7 +68,7 @@ mod1 <- train(classe ~., data = trainingData, method = "rpart")
 fancyRpartPlot(mod1$finalModel)
 ```
 
-![](Assignment_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+![](Assignment_files/figure-html/model-1.png)<!-- -->
 
 ```r
 pred1 <- predict(mod1,testingData)
@@ -154,7 +154,7 @@ confusionMatrix(pred2, testingData$classe)
 
 Model 2 is the best with an accuracy of 0.99.
 
-# Quizz
+## Quizz
 
 ```r
 predTest <- predict(mod2, test)
