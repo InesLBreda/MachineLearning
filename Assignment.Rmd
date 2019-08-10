@@ -1,0 +1,78 @@
+---
+title: "Machine Learning"
+author: "Inês L. Breda"
+date: "8/10/2019"
+output: 
+ html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+# Summary:
+This assignment aims to develop a model that can predict if a barbell lift is being well executed or not. The data includes sensor measurements located in the belt, the forearm, the arm and the dumbell of 6 individuals. Each of the 6 individuals performed barbell lifts in 5 different ways, 1 in a correct manner (class A), and 4 in an incorrect manner (class B, C, D and E). The model further described below classifies the barbell lifts with an accuracy of 0.99. 
+
+
+# Packages and data
+
+```{r library, include=FALSE}
+library(caret); library(ggplot2); library(lubridate); library(rattle)
+```
+
+## Cleaning and treating data
+```{r data}
+#import data
+training <- read.csv(file = "pml-training.csv",header = T, sep = ",", row.names = 1, na.strings=c("NA","#DIV/0!",""))
+#format date and time
+training$cvtd_timestamp <- parse_date_time(training$cvtd_timestamp , orders="dmy HMS")
+#remove userID to aviod correlation between classe and user
+training <- training[,-1]
+
+#remove near zero variables
+DataNZV <- nearZeroVar(training, saveMetrics=TRUE) 
+training <- training[,DataNZV$nzv  == "FALSE"]
+
+#remove variables with > 50% NA values
+NAColum <- colSums(is.na(training))/nrow(training) >0.5
+training <- training[,NAColum == "FALSE"]
+#repeat the same transformations on the testing data
+test <- read.csv(file = "pml-testing.csv",header = T, sep = ",", row.names = 1, na.strings=c("NA","#DIV/0!",""))
+test$cvtd_timestamp <- parse_date_time(test$cvtd_timestamp , orders="dmy HMS")
+test <- test[,-1]
+test <- test[,DataNZV$nzv  == "FALSE"]
+test <- test[,NAColum == "FALSE"]
+#dimensions of training and test after dimensioning
+training <- as.data.frame(training)
+test <- as.data.frame(test)
+dim(training); dim(test)
+```
+
+## Model creation and evaluation
+```{r model}
+#creating traing and testing data
+inTrain <- createDataPartition(y = training$classe, p = 0.7, list = F)
+trainingData <- training[inTrain,]
+testingData <- training[-inTrain,]
+
+set.seed(1777)
+#Model 1: Rpart
+mod1 <- train(classe ~., data = trainingData, method = "rpart")
+fancyRpartPlot(mod1$finalModel)
+pred1 <- predict(mod1,testingData)
+confusionMatrix(pred1, testingData$classe)
+#Model 2: Boosters gbm
+mod2 <- train(classe ~., data = trainingData, method = "gbm", verbose = FALSE)
+pred2 <- predict(mod2, testingData)
+confusionMatrix(pred2, testingData$classe)
+```
+
+Model 2 is the best with an accuracy of 0.99.
+
+## Quizz
+```{r quizz}
+predTest <- predict(mod2, test)
+data.frame(test$problem_id, predTest)
+```
+
